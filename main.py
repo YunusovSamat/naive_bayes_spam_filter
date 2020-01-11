@@ -1,7 +1,6 @@
 import string
 
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
@@ -25,14 +24,19 @@ msgs.drop(['Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4'], axis=1, inplace=True)
 msgs = msgs.rename(columns={'v1': 'class', 'v2': 'text'})
 
 msg_train, msg_test, class_train, class_test = train_test_split(
-    msgs['text'], msgs['class'], test_size=0.2)
+    msgs['text'], msgs['class'], test_size=0.01)
 
 pipeline = Pipeline([
     ('bow', CountVectorizer(analyzer=process_text)),
-    ('tfidf', TfidfTransformer()),
     ('classifier', MultinomialNB())
 ])
 
 pipeline.fit(msg_train, class_train)
-predictions = pipeline.predict(msg_test)
-print(classification_report(class_test, predictions))
+test_i = msg_test.first_valid_index()
+prediction = pipeline.predict([msg_test[test_i]])[0]
+print(f'Message:\n{msg_test[test_i]}')
+print(f'Class: {class_test[test_i]}')
+print(f'{"-"*50}\nPrediction: {prediction}')
+# predictions = pipeline.predict(msg_test)
+# print(classification_report(class_test, predictions))
+
